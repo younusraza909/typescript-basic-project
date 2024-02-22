@@ -3,12 +3,8 @@ import Header from "./components/Header";
 
 import goalImage from "./assets/goals.jpg";
 import { useState } from "react";
-
-type Goal = {
-  description: string;
-  title: string;
-  id: number;
-};
+import CourseGoalList from "./components/CourseGoalList";
+import { Goal } from "./types";
 
 export default function App() {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -24,22 +20,17 @@ export default function App() {
     ]);
   }
 
+  function handleDeleteGoal(id: number) {
+    setGoals((prev) => prev.filter((p) => p.id !== id));
+  }
+
   return (
     <main>
       <Header image={{ src: goalImage, alt: "A list of goals" }}>
         <h1>Yout Course Goals</h1>
       </Header>
       <button onClick={handleAddGoal}>Add Goal</button>
-      <ul>
-        {goals &&
-          goals.map((g) => (
-            <li key={g.id}>
-              <CourseGoal title={g.title}>
-                <p>{g.description}</p>
-              </CourseGoal>
-            </li>
-          ))}
-      </ul>
+      <CourseGoalList goals={goals} onDelete={handleDeleteGoal} />
     </main>
   );
 }
