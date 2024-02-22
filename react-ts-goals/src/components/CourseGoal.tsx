@@ -15,7 +15,7 @@ const CourseGoal = ({ children, title }: CourseGoalProps) => {
         <h2>{title}</h2>
         {children}
       </div>
-      <button>delete</button>
+      <button>Delete</button>
     </article>
   );
 };
