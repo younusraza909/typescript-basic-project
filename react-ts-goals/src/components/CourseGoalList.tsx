@@ -1,5 +1,6 @@
 import { Goal } from "../types";
 import CourseGoal from "./CourseGoal";
+import InfoBox from "./InfoBox";
 
 type CourseGoalListProps = {
   goals: Goal[];
@@ -7,17 +8,33 @@ type CourseGoalListProps = {
 };
 
 const CourseGoalList = ({ goals, onDelete }: CourseGoalListProps) => {
+  if (goals.length === 0) {
+    return <InfoBox mode="hint">There are no goals added yet!</InfoBox>;
+  }
+
+  let InfoBoxWarning: React.ReactNode;
+
+  if (goals.length >= 4) {
+    InfoBoxWarning = (
+      <InfoBox mode="warning">
+        You have added to much goals. Do'nt put too much on your plate!
+      </InfoBox>
+    );
+  }
   return (
-    <ul>
-      {goals &&
-        goals.map((g) => (
-          <li key={g.id}>
-            <CourseGoal title={g.title} id={g.id} onDelete={onDelete}>
-              <p>{g.description}</p>
-            </CourseGoal>
-          </li>
-        ))}
-    </ul>
+    <>
+      {InfoBoxWarning}
+      <ul>
+        {goals &&
+          goals.map((g) => (
+            <li key={g.id}>
+              <CourseGoal title={g.title} id={g.id} onDelete={onDelete}>
+                <p>{g.description}</p>
+              </CourseGoal>
+            </li>
+          ))}
+      </ul>
+    </>
   );
 };
 
