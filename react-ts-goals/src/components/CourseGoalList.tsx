@@ -16,7 +16,7 @@ const CourseGoalList = ({ goals, onDelete }: CourseGoalListProps) => {
 
   if (goals.length >= 4) {
     InfoBoxWarning = (
-      <InfoBox mode="warning">
+      <InfoBox mode="warning" severity="high">
         You have added to much goals. Do'nt put too much on your plate!
       </InfoBox>
     );
