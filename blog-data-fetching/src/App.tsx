@@ -4,12 +4,20 @@ import ErrorMessage from "./components/ErrorMessage";
 import fetchingImage from "./assets/data-fetching.png";
 import { get } from "./utils/get";
 
-type rawDataPost = {
-  body: string;
-  id: number;
-  title: string;
-  userId: number;
-};
+import { TypeOf, z } from "zod";
+
+const rawDataPost = z.object({
+  body: z.string(),
+  id: z.number(),
+  title: z.string(),
+  userId: z.number(),
+});
+
+type rawDataPostType = z.infer<typeof rawDataPost>;
+
+const expectedDataFromAPI = z.array(rawDataPost);
+
+type expectedDataFromAPI = z.infer<typeof expectedDataFromAPI>;
 
 function App() {
   const [blogs, setBlogs] = useState<BlogPost[]>();
@@ -18,9 +26,10 @@ function App() {
   useEffect(() => {
     async function fetchBlogs() {
       try {
-        const fetchedBlogs = (await get(
-          "https://jsonplaceholder.typicode.com/posts"
-        )) as rawDataPost[];
+        const fetchedBlogs = await get<expectedDataFromAPI>(
+          "https://jsonplaceholder.typicode.com/posts",
+          expectedDataFromAPI
+        );
 
         const formattedBlogs = fetchedBlogs.map((blog) => ({
           id: blog.id,

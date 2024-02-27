@@ -1,11 +1,13 @@
-export async function get(url: string) {
+import { z } from "zod";
+
+export async function get<T>(url: string, schema: z.ZodType<T>) {
   const result = await fetch(url);
 
-  if (!result.ok) {
-    throw new Error("Unable to fetch data, something went wrong");
+  const data = (await result.json()) as unknown;
+
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    throw new Error("Invalid data received from server.");
   }
-
-  const data = await result.json();
-
-  return data;
 }
