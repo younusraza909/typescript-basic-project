@@ -1,0 +1,105 @@
+<p>When fetching data, it can be a good idea to parse &amp;&nbsp;validate the fetched data to check if it's in line with your data structure expectations.</p><p>A&nbsp;great library for doing that validation is the <a href="https://zod.dev/" rel="noopener noreferrer" target="_blank">Zod</a> library because this library embraces TypeScript and is written such that TypeScript is able to infer the structure of the parsed /&nbsp;validated data.</p><p>I could create an entire course about Zod, but here's a very brief introduction.</p><p>When working with Zod (after installing it via <code>npm install zod</code>), your main task is to create a schema for the data you're trying to validate.</p><p>For example, when fetching blog posts, you would define the schema for a single blog post:</p><pre class="prettyprint linenums">import { z } from 'zod';
+
+const rawDataBlogPostSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  title: z.string(),
+  body: z.string(),
+});</pre><p><strong>Important:</strong>&nbsp;This is JavaScript code! It will be compiled and will execute at runtime.</p><p>But, under the hood, it's written such that, during development, TypeScript is able to infer the type of the values that will be parsed /&nbsp;validated via that schema.</p><p>Speaking of that, here's how you would use this <code>rawDataBlogPostSchema</code> to validate a value:</p><pre class="prettyprint linenums">const parsedData = rawDataBlogPostSchema.parse(someData)</pre><p>This will throw an error if <code>someData</code> is not in line with the defined schema (e.g., if a property is missing or of a different value type).</p><p>It will return the parsed data if validation succeeds.</p><p>The great thing is, that TypeScript now knows the type of <code>parsedData</code> =&gt;&nbsp;It will be the type you set up in your schema.</p><p>In this example, TypeScript would know that <code>parsedData</code> contains the properties <code>id</code> (number), <code>userId</code> (number), <code>title</code> (string) and <code>body</code> (string).</p><p>Therefore, even if <code>someData</code> was <code>any</code> or <code>unknown</code>, <code>parsedData</code> will be a known type.</p><p>When using Zod in the course demo app, you could therefore adjust the <code>App</code> component file like this:</p><pre class="prettyprint linenums">import { z } from 'zod';
+// other imports ...
+
+//&nbsp;outside of App component function (since this doesn't need to be re-created all the time)
+const rawDataBlogPostSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  title: z.string(),
+  body: z.string(),
+});
+// z.array() is a Zod method that creates a new schema based on another schema
+// as the name suggests, it's simply an array containing the expected objects
+const expectedResponseDataSchema =&nbsp;z.array(rawDataBlogPostSchema);
+
+function App() {
+  //&nbsp;other code like useState() etc ...
+
+  useEffect(()&nbsp;=&gt;&nbsp;{
+    async function fetchPosts() {
+      setIsFetching(true);
+      try {
+        const data = await get(
+          'https://jsonplaceholder.typicode.com/posts'
+        );
+        const parsedData =&nbsp;expectedResponseDataSchema.parse(data);
+        //&nbsp;No more type casting via "as"&nbsp;needed!
+        //&nbsp;Instead, here, TypeScript "knows" that parsedData will be an array
+        //&nbsp;full with objects as defined by the above schema
+        const blogPosts: BlogPost[] = parsedData.map((rawPost) =&gt; {
+          return {
+            id: rawPost.id,
+            title: rawPost.title,
+            text: rawPost.body,
+          };
+        });
+        setFetchedPosts(blogPosts);
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        }
+        // setError('Failed to fetch posts!');
+      }
+
+      setIsFetching(false);
+    }
+
+    fetchPosts();
+  }, []);
+
+  //&nbsp;other code ...
+}</pre>
+
+
+
+//////////
+
+
+
+<p>As always, there are, of course, multiple ways of building the <code>get</code> function.</p><p>You could, for example, also build it as a generic function that accepts the expected return value type as a type argument:</p><pre class="prettyprint linenums">export async function get&lt;T&gt;(url: string) {
+    const response = await fetch(url);
+  
+    if (!response.ok) {
+      throw new Error('Failed to fetch data.');
+    }
+  
+    const data = await response.json() as unknown; 
+    return data as T;
+  }</pre><p>Now the <em>"Type&nbsp;Casting"</em>&nbsp;(<em>"Type Assertion"</em>)&nbsp;takes place right inside the get function to <em>"force"</em>&nbsp;TypeScript to treat data as type <code>T</code>. </p><p><code>T</code> is then set when calling get:</p><pre class="prettyprint linenums">const data = await get&lt;RawDataBlogPost[]&gt;(
+    'https://jsonplaceholder.typicode.com/posts'
+  );</pre><p>This allows you to use <code>get()</code> without having to cast the type to the expected value type. </p><p>It's of course up to you, whether you prefer this approach whether the approach shown in the videos.</p><p><strong>Level-up:&nbsp;Use with Zod</strong></p><p>You can also take this to the next level when using <a href="https://zod.dev/" rel="noopener noreferrer" target="_blank">Zod</a> (see previous lecture).</p><p>You can adjust the <code>get</code> function to accept a second parameter that could be called <code>zodSchema</code> and should be a Zod schema object (of type <code>ZodType</code>).</p><p>This Zod schema can then be used inside the <code>get</code> function to parse the received response.</p><pre class="prettyprint linenums">import { z } from 'zod';
+  
+  export async function get&lt;T&gt;(url: string, zodSchema: z.ZodType&lt;T&gt;) {
+    const response = await fetch(url);
+  
+    if (!response.ok) {
+      throw new Error('Failed to fetch data.');
+    }
+  
+    const data = (await response.json()) as unknown;
+  
+    try {
+      return zodSchema.parse(data);
+    } catch (error) {
+      throw new Error('Invalid data received from server.');
+    }
+  }</pre><p>Since Zod would throw an error if parsing the data fails, TypeScript knows that if it succeeds, the data will be a value of the type defined by the Zod schema (i.e., TypeScript will narrow the type to be of that type).</p><p>Therefore, no more type casting is needed anywhere. Instead, in the place where <code>get()</code> should be called, you just need to define a Zod schema that describes the expected type and pass it to <code>get()</code>.</p><pre class="prettyprint linenums">import { z } from 'zod';
+  
+  
+  const rawDataBlogPostSchema = z.object({
+    id: z.number(),
+    userId: z.number(),
+    title: z.string(),
+    body: z.string(),
+  });
+  
+  const data = await get('https://jsonplaceholder.typicode.com/posts', z.array(rawDataBlogPostSchema));
+  
+  data[0].userId;&nbsp;//&nbsp;works =&gt;&nbsp;TypeScript knows that userId will exist on the returned data</pre>
