@@ -45,13 +45,18 @@ const reducer = (
 ): TimersState => {
   switch (action.type) {
     case "ADD_TIMER":
-      return { ...state, timers: [...state.timers, { ...action.payload }] };
+      return {
+        ...state,
+        timers: [...state.timers, { ...action.payload }],
+        isRunning: true,
+      };
     case "START_TIMERS":
       return { ...state, isRunning: true };
     case "END_TIMERS":
       return { ...state, isRunning: false };
+    default:
+      return state;
   }
-  return state;
 };
 
 export const TimersContextProvider = ({
