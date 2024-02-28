@@ -107,6 +107,7 @@ ul {
   color: #c6a8f5;
   padding: 0.25rem 0;
   border-bottom: 2px solid transparent;
+  cursor: pointer;
 }
 
 #main-header a:hover,
