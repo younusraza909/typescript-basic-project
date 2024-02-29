@@ -1,7 +1,11 @@
 import SessionsList from "../components/Sessions/SessionsList";
 import { SESSIONS } from "../dummy-sessions"; // normally, we would probably load that from a server
+import { useSessionContext } from "../store/session";
 
 export default function SessionsPage() {
+  const { upcomingSessions } = useSessionContext();
+
+  console.log("upcomingSessions", upcomingSessions);
   return (
     <main id="sessions-page">
       <header>

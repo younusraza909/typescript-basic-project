@@ -1,7 +1,5 @@
 import { useParams } from "react-router-dom";
 import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Modal from "../components/ui/Modal";
 
 import { SESSIONS } from "../dummy-sessions";
 

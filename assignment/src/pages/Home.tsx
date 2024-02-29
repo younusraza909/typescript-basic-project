@@ -6,7 +6,6 @@ import Header from "../components/Header";
 export default function HomePage() {
   return (
     <main id="home-page">
-      <Header />
       <h2>Our Mission: Your Success</h2>
       <section>
         <img src={studentsImg} alt="A group of students" />
