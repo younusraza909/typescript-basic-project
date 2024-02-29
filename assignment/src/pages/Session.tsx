@@ -1,6 +1,6 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 
-import { SESSIONS } from '../dummy-sessions.ts';
+import { SESSIONS } from "../dummy-sessions";
 
 export default function SessionPage() {
   const params = useParams<{ id: string }>();
@@ -16,22 +16,18 @@ export default function SessionPage() {
     );
   }
 
-
   return (
     <main id="session-page">
       <article>
         <header>
-          <img
-            src={loadedSession.image}
-            alt={loadedSession.title}
-          />
+          <img src={loadedSession.image} alt={loadedSession.title} />
           <div>
             <h2>{loadedSession.title}</h2>
             <time dateTime={new Date(loadedSession.date).toISOString()}>
-              {new Date(loadedSession.date).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
+              {new Date(loadedSession.date).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
               })}
             </time>
             <p>
