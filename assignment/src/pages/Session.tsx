@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../components/ui/Button";
 
 import { SESSIONS } from "../dummy-sessions";
+import BookSession from "./BookSession";
 
 export default function SessionPage() {
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
 
   const sessionId = params.id;
@@ -17,8 +20,15 @@ export default function SessionPage() {
     );
   }
 
+  function triggerModal() {
+    setIsOpenModal((prev) => !prev);
+  }
+
   return (
     <main id="session-page">
+      {isOpenModal && (
+        <BookSession onDone={triggerModal} session={loadedSession} />
+      )}
       <article>
         <header>
           <img src={loadedSession.image} alt={loadedSession.title} />
@@ -32,7 +42,7 @@ export default function SessionPage() {
               })}
             </time>
             <p>
-              <Button>Book Session</Button>
+              <Button onClick={triggerModal}>Book Session</Button>
             </p>
           </div>
         </header>
