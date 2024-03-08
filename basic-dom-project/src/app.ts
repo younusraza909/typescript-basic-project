@@ -104,13 +104,27 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   abstract renderContent(): void
 }
 
-class ProjectState {
+type ListnerType<T> = (items: T[]) => void
+
+class State<T> {
+  protected listeners: ListnerType<T>[] = []
+
+  constructor() { }
+
+
+  registerEvent(eventFn: ListnerType<T>) {
+    this.listeners.push(eventFn);
+  }
+}
+
+class ProjectState extends State<Project> {
   projects: Project[] = [];
-  events: any[] = [];
 
   private static instance: ProjectState;
 
-  private constructor() { }
+  private constructor() {
+    super()
+  }
 
   static createInstance() {
     let newInstance: ProjectState;
@@ -123,9 +137,6 @@ class ProjectState {
     return newInstance;
   }
 
-  registerEvent(eventFn: any) {
-    this.events.push(eventFn);
-  }
 
   addProject(title: string, description: string, people: number) {
     const project = new Project(
@@ -138,7 +149,7 @@ class ProjectState {
 
     this.projects.push(project);
 
-    for (const eventFn of this.events) {
+    for (const eventFn of this.listeners) {
       eventFn(this.projects.slice());
     }
   }
