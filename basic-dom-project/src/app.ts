@@ -9,6 +9,13 @@ interface validatableData {
   max?: number;
 }
 
+interface ProjectType {
+  id: string;
+  title: string;
+  description: string;
+  people: number;
+}
+
 function validate(data: validatableData): boolean {
   let isValid = true;
 
@@ -54,10 +61,36 @@ function AutoBind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjMethod;
 }
 
+class ProjectState {
+  projects: ProjectType[] = [];
+  events: any[] = [];
+
+  registerEvent(eventFn: any) {
+    this.events.push(eventFn);
+  }
+
+  addProject(title: string, description: string, people: number) {
+    const project = {
+      id: Math.random().toString(),
+      title,
+      description,
+      people,
+    };
+
+    this.projects.push(project);
+
+    for (const eventFn of this.events) {
+      eventFn(this.projects.slice());
+    }
+  }
+}
+
 class ProjectList {
   projectLisTTemplate: HTMLTemplateElement;
   mainAppDiv: HTMLDivElement;
   projectListElement: HTMLElement;
+
+  assignedProjects: ProjectType[] = [];
 
   constructor(private type: "active" | "finished") {
     // Accessing and saving DOM element
@@ -74,12 +107,29 @@ class ProjectList {
     this.projectListElement = importedNode.firstElementChild as HTMLElement;
     this.projectListElement.id = `${this.type}-projects`;
 
+    projectState.registerEvent((projects: ProjectType[]) => {
+      this.assignedProjects.push(...projects);
+      this.renderProjectList();
+    });
+
     this.renderContent();
     this.mountUi();
   }
 
+  private renderProjectList() {
+    const listEl = document.querySelector(
+      `#${this.type}-projects-list`
+    ) as HTMLUListElement;
+
+    for (const prjElem of this.assignedProjects) {
+      const listItem = document.createElement("li");
+      listItem.textContent = prjElem.title;
+      listEl.appendChild(listItem);
+    }
+  }
+
   private renderContent() {
-    const listId = `${this.type}-projects`;
+    const listId = `${this.type}-projects-list`;
 
     this.projectListElement.querySelector("ul")!.id = listId;
 
@@ -135,7 +185,21 @@ class ProjectInput {
   @AutoBind
   private handleFormSubmission(event: Event) {
     event.preventDefault();
-    this.gatherUserInformation();
+    const userInputData = this.gatherUserInformation();
+
+    if (Array.isArray(userInputData)) {
+      const [title, description, people] = userInputData;
+
+      projectState.addProject(title, description, people);
+
+      this.clearState();
+    }
+  }
+
+  private clearState() {
+    this.titleInput.value = "";
+    this.descriptionInput.value = "";
+    this.peopleInput.value = "";
   }
 
   private gatherUserInformation(): [string, string, number] | void {
@@ -169,5 +233,6 @@ class ProjectInput {
 
 const project = new ProjectInput();
 
+const projectState = new ProjectState();
 const activeProjectsList = new ProjectList("active");
 const finishedProjectsList = new ProjectList("finished");
