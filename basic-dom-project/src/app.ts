@@ -1,5 +1,20 @@
 // Code goes here!
 
+function AutoBind(_: any, _2: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  const adjMethod: PropertyDescriptor = {
+    configurable: true,
+    enumerable: true,
+    get() {
+      const boundFn = originalMethod.bind(this);
+      return boundFn;
+    },
+  };
+
+  return adjMethod;
+}
+
 class ProjectInput {
   formTemplate: HTMLTemplateElement;
   mainAppDiv: HTMLDivElement;
@@ -26,7 +41,6 @@ class ProjectInput {
     this.titleInput = this.formElement.querySelector(
       "#title"
     )! as HTMLInputElement;
-    console.log("titleInput", this.titleInput);
 
     this.descriptionInput = this.formElement.querySelector(
       "#description"
@@ -39,17 +53,13 @@ class ProjectInput {
     this.mountUi();
   }
 
+  @AutoBind
   private handleFormSubmission(event: Event) {
     event.preventDefault();
-
-    console.log(this.titleInput.value);
   }
 
   private authorize() {
-    this.formElement.addEventListener(
-      "submit",
-      this.handleFormSubmission.bind(this)
-    );
+    this.formElement.addEventListener("submit", this.handleFormSubmission);
   }
 
   private mountUi() {
