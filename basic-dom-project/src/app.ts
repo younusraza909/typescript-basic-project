@@ -9,11 +9,19 @@ interface validatableData {
   max?: number;
 }
 
-interface ProjectType {
-  id: string;
-  title: string;
-  description: string;
-  people: number;
+enum ProjectStatus {
+  Active,
+  Finished,
+}
+
+class Project {
+  constructor(
+    public id: string,
+    public title: string,
+    public description: string,
+    public people: number,
+    public status: ProjectStatus
+  ) {}
 }
 
 function validate(data: validatableData): boolean {
@@ -62,7 +70,7 @@ function AutoBind(_: any, _2: string, descriptor: PropertyDescriptor) {
 }
 
 class ProjectState {
-  projects: ProjectType[] = [];
+  projects: Project[] = [];
   events: any[] = [];
 
   private static instance: ProjectState;
@@ -85,12 +93,13 @@ class ProjectState {
   }
 
   addProject(title: string, description: string, people: number) {
-    const project = {
-      id: Math.random().toString(),
+    const project = new Project(
+      Math.random().toString(),
       title,
       description,
       people,
-    };
+      ProjectStatus.Active
+    );
 
     this.projects.push(project);
 
@@ -105,7 +114,7 @@ class ProjectList {
   mainAppDiv: HTMLDivElement;
   projectListElement: HTMLElement;
 
-  assignedProjects: ProjectType[] = [];
+  assignedProjects: Project[] = [];
 
   constructor(private type: "active" | "finished") {
     // Accessing and saving DOM element
@@ -122,7 +131,7 @@ class ProjectList {
     this.projectListElement = importedNode.firstElementChild as HTMLElement;
     this.projectListElement.id = `${this.type}-projects`;
 
-    projectState.registerEvent((projects: ProjectType[]) => {
+    projectState.registerEvent((projects: Project[]) => {
       this.assignedProjects.push(...projects);
       this.renderProjectList();
     });
