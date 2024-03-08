@@ -65,6 +65,21 @@ class ProjectState {
   projects: ProjectType[] = [];
   events: any[] = [];
 
+  private static instance: ProjectState;
+
+  private constructor() {}
+
+  static createInstance() {
+    let newInstance: ProjectState;
+    if (ProjectState.instance) {
+      newInstance = ProjectState.instance;
+    } else {
+      newInstance = new ProjectState();
+    }
+
+    return newInstance;
+  }
+
   registerEvent(eventFn: any) {
     this.events.push(eventFn);
   }
@@ -233,6 +248,6 @@ class ProjectInput {
 
 const project = new ProjectInput();
 
-const projectState = new ProjectState();
+const projectState = ProjectState.createInstance();
 const activeProjectsList = new ProjectList("active");
 const finishedProjectsList = new ProjectList("finished");
