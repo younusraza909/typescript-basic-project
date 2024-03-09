@@ -155,6 +155,36 @@ class ProjectState extends State<Project> {
   }
 }
 
+class ProjectItem extends Component<HTMLLIElement, HTMLUListElement> {
+  public project: Project
+
+  constructor(templateId: string, hostElement: string, project: Project) {
+    super(templateId, hostElement, true)
+    this.project = project
+    this.renderContent()
+  }
+
+  get persons() {
+    return this.project.people === 1 ?
+      '1 person' :
+      `${this.project.people} persons`
+  }
+
+
+  configure(): void {
+
+  }
+
+
+  renderContent(): void {
+    this.element.querySelector('h2')!.innerText = this.project.title
+    this.element.querySelector('h3')!.innerText = this.persons + ' assigned'
+    this.element.querySelector('p')!.innerText = this.project.description
+
+    this.hostElement.appendChild(this.element)
+  }
+}
+
 class ProjectList extends Component<HTMLElement, HTMLDivElement> {
 
   assignedProjects: Project[] = [];
@@ -193,9 +223,7 @@ class ProjectList extends Component<HTMLElement, HTMLDivElement> {
 
     listEl.innerHTML = "";
     for (const prjElem of this.assignedProjects) {
-      const listItem = document.createElement("li");
-      listItem.textContent = prjElem.title;
-      listEl.appendChild(listItem);
+      new ProjectItem('single-project', `${this.type}-projects-list`, prjElem)
     }
   }
 
